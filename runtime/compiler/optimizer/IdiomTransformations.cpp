@@ -8690,6 +8690,60 @@ bool CISCTransform2ArraySet(TR_CISCTransformer *trans)
         }
     }
 
+    // Check if any stores are to the same array by comparing all pairs
+    // This prevents merging stores to the same array into a single arrayset
+    // which would cause incorrect behavior when arrays overlap (e.g., a[i] and a[i+offset])
+    ListIterator<TR::Node> outerIterator(&listStores);
+    for (TR::Node *outerStoreNode = outerIterator.getFirst(); outerStoreNode; outerStoreNode = outerIterator.getNext()) {
+        TR::Node *outerBaseArray = getArrayBase(outerStoreNode);
+        
+        if (!outerBaseArray) {
+            dumpOptDetails(comp, "Could not extract base array from outer store node %p\n", outerStoreNode);
+            return false;
+        }
+        
+        ListIterator<TR::Node> innerIterator(&listStores);
+        for (TR::Node *innerStoreNode = innerIterator.getFirst(); innerStoreNode; innerStoreNode = innerIterator.getNext()) {
+            // Skip comparing a node with itself
+            if (outerStoreNode == innerStoreNode) {
+                continue;
+            }
+            
+            TR::Node *innerBaseArray = getArrayBase(innerStoreNode);
+            
+            if (!innerBaseArray) {
+                dumpOptDetails(comp, "Could not extract base array from inner store node %p\n", innerStoreNode);
+                return false;
+            }
+            
+            // Check if the two stores are to the same array
+            bool sameArray = false;
+            
+            // Check if they're the same node (commoned)
+            if (outerBaseArray == innerBaseArray) {
+                sameArray = true;
+            }
+            // Check if they have the same symbol reference
+            else if (outerBaseArray->getOpCode().hasSymbolReference() && innerBaseArray->getOpCode().hasSymbolReference()
+                && outerBaseArray->getSymbolReference() == innerBaseArray->getSymbolReference()) {
+                sameArray = true;
+            }
+            
+            if (sameArray) {
+                dumpOptDetails(comp, 
+                    "Found stores to the same array - cannot merge into arrayset:\n"
+                    "  Store 1: %p (base array %p, symref #%d)\n"
+                    "  Store 2: %p (base array %p, symref #%d)\n",
+                    outerStoreNode, outerBaseArray,
+                    outerBaseArray->getOpCode().hasSymbolReference() ? outerBaseArray->getSymbolReference()->getReferenceNumber() : -1,
+                    innerStoreNode, innerBaseArray,
+                    innerBaseArray->getOpCode().hasSymbolReference() ? innerBaseArray->getSymbolReference()->getReferenceNumber() : -1);
+                return false;
+            }
+        }
+    }
+
+
     List<TR::Node> listArraySet(comp->trMemory());
     TR::Node *computeIndex = NULL;
     TR::Node *lengthNode = NULL;
