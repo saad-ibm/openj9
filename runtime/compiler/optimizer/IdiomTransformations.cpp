@@ -8716,7 +8716,7 @@ bool CISCTransform2ArraySet(TR_CISCTransformer *trans)
             }
             
             TR::Node *innerBaseArray = getArrayBase(innerStoreNode);
-            printf("Inside the second for loop\n %p %p\n", innerBaseArray, outterBaseArray);
+            printf("Inside the second for loop\n %p %p\n", innerBaseArray, outerBaseArray);
             if (!innerBaseArray) {
                 printf("Reached here arraysetidiomfix - inner array is null\n");
         
