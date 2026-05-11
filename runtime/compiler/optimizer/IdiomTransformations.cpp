@@ -8695,11 +8695,11 @@ bool CISCTransform2ArraySet(TR_CISCTransformer *trans)
     // which would cause incorrect behavior when arrays overlap (e.g., a[i] and a[i+offset])
     if (feGetEnv("useSaadsCode") != NULL) {
 
-    printf("About to enter Saad's code - main loop");
+    printf("About to enter Saad's code - main loop\n");
     ListIterator<TR::Node> outerIterator(&listStores);
     for (TR::Node *outerStoreNode = outerIterator.getFirst(); outerStoreNode; outerStoreNode = outerIterator.getNext()) {
         TR::Node *outerBaseArray = getArrayBase(outerStoreNode);
-        
+        printf("Inside the first for loop\n");
         if (!outerBaseArray) {
             printf("Reached here arraysetidiomfix - outer array is null\n");
         
@@ -8710,6 +8710,7 @@ bool CISCTransform2ArraySet(TR_CISCTransformer *trans)
         ListIterator<TR::Node> innerIterator(&listStores);
         for (TR::Node *innerStoreNode = innerIterator.getFirst(); innerStoreNode; innerStoreNode = innerIterator.getNext()) {
             // Skip comparing a node with itself
+            printf("Inside the second for loop\n");
             if (outerStoreNode == innerStoreNode) {
                 continue;
             }
@@ -8728,13 +8729,22 @@ bool CISCTransform2ArraySet(TR_CISCTransformer *trans)
             
             // Check if they're the same node (commoned)
             if (outerBaseArray == innerBaseArray) {
+                printf("same array commoned\n");
                 sameArray = true;
             }
             // Check if they have the same symbol reference
             else if (outerBaseArray->getOpCode().hasSymbolReference() && innerBaseArray->getOpCode().hasSymbolReference()
                 && outerBaseArray->getSymbolReference() == innerBaseArray->getSymbolReference()) {
-                sameArray = true;
+                
+                    printf("same array symbol ref\n");
+                    sameArray = true;
+            } else if (outerBaseArray->getOpCode().hasSymbolReference() && innerBaseArray->getOpCode().hasSymbolReference()
+                && outerBaseArray->getSymbolReference()->getReferenceNumber() == innerBaseArray->getSymbolReference()->getReferenceNumber()) {
+                
+                    printf("same array ref number\n");
+                    sameArray = true;
             }
+
             
             if (sameArray) {
                 printf("Reached here arraysetidiomfix - inner and outter array are same\n");
