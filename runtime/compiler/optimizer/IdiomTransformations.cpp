@@ -8717,10 +8717,10 @@ bool CISCTransform2ArraySet(TR_CISCTransformer *trans)
             
             TR::Node *innerBaseArray = getArrayBase(innerStoreNode);
             
-            printf("outer array: %p, inner array: %p\n", outerBaseArray, innerBaseArray);
+            printf("outer array: %p, inner array: %p\n", outerBaseArray->getSymbolReference(), innerBaseArray->getSymbolReference());
             printf("outer dstore symref: %p, inner symref: %p\n", outerBaseArray->getSymbolReference(), innerBaseArray->getSymbolReference());
             printf("use def %d\n", outerBaseArray->getSymbolReference()->getUseDefAliases().contains(innerBaseArray->getSymbolReference(), comp));
-            printf("outer dstore symref number: %d, inner symref number: %d\n", outerBaseArray->getSymbolReference()->getReferenceNumber(), innerBaseArray->getSymbolReference()->getReferenceNumber());
+            printf("outer dstore symref : %p, inner symref : %p\n", innerStoreNode->getSymbolReference(), outerStoreNode->getSymbolReference());
             if (!innerBaseArray) {
                 printf("Reached here arraysetidiomfix - inner array is null\n");
         
