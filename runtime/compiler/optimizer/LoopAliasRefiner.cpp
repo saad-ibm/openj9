@@ -419,7 +419,7 @@ TR::Node *TR_LoopAliasRefiner::ArrayRangeLimits::createRangeTestExpr(TR::Compila
     if ((getArrayAccessSymRef() == other->getArrayAccessSymRef())
         || getArrayAccessSymRef()->getUseDefAliases().contains(other->getArrayAccessSymRef(), comp))
         isAliased = true;
-
+    printf("access sym ref1 %p access sym ref2 %p\n", getArrayAccessSymRef()->getReferenceNumber(), other->getArrayAccessSymRef()->getReferenceNumber());
     logprintf(trace, comp->log(), "access sym ref1 %d access sym ref2 %d isAliased %d\n", getArrayAccessSymRef(),
         other->getArrayAccessSymRef(), isAliased);
 
