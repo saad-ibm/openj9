@@ -8685,7 +8685,7 @@ bool CISCTransform2ArraySet(TR_CISCTransformer *trans)
                     == indexNode->getSymbolReference()->getReferenceNumber()
                 || valueNode->getSymbolReference()->getReferenceNumber()
                     == index1RepNode->getSymbolReference()->getReferenceNumber()) {
-                logprints(disptrace, log, "/ rhs\n");
+                logprints(disptrace, log, "arraystore tree has induction variable on rhs\n");
                 return false;
             }
         }
@@ -8717,6 +8717,9 @@ bool CISCTransform2ArraySet(TR_CISCTransformer *trans)
     // Check if any stores are to the same array by comparing all pairs
     // This prevents merging stores to the same array into a single arrayset
     // which would cause incorrect behavior when arrays overlap (e.g., a[i] and a[i+offset])
+    if (feGetEnv("useSaadsCode") != NULL) {
+
+    printf("About to enter Saad's code - main loop");
     ListIterator<TR::Node> outerIterator(&listStores);
     for (TR::Node *outerStoreNode = outerIterator.getFirst(); outerStoreNode; outerStoreNode = outerIterator.getNext()) {
         TR::Node *outerBaseArray = getArrayBase(outerStoreNode);
@@ -8772,7 +8775,7 @@ bool CISCTransform2ArraySet(TR_CISCTransformer *trans)
             }
         }
     }
-
+    }
 
     List<TR::Node> listArraySet(comp->trMemory());
     TR::Node *computeIndex = NULL;
