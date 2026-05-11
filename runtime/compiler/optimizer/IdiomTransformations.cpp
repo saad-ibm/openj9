@@ -8734,13 +8734,13 @@ bool CISCTransform2ArraySet(TR_CISCTransformer *trans)
         ListIterator<TR::Node> innerIterator(&listStores);
         for (TR::Node *innerStoreNode = innerIterator.getFirst(); innerStoreNode; innerStoreNode = innerIterator.getNext()) {
             // Skip comparing a node with itself
-            printf("Inside the second for loop\n");
+            printf("Inside the second for loop\n %p %p\n", outerStoreNode, innerStoreNode);
             if (outerStoreNode == innerStoreNode) {
                 continue;
             }
             
             TR::Node *innerBaseArray = getArrayBase(innerStoreNode);
-            
+            printf("Inside the second for loop\n %p %p\n", innerBaseArray, outterBaseArray);
             if (!innerBaseArray) {
                 printf("Reached here arraysetidiomfix - inner array is null\n");
         
