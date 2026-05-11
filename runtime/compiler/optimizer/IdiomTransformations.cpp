@@ -8698,6 +8698,8 @@ bool CISCTransform2ArraySet(TR_CISCTransformer *trans)
         TR::Node *outerBaseArray = getArrayBase(outerStoreNode);
         
         if (!outerBaseArray) {
+            printf("Reached here arraysetidiomfix - outer array is null\n");
+        
             dumpOptDetails(comp, "Could not extract base array from outer store node %p\n", outerStoreNode);
             return false;
         }
@@ -8712,6 +8714,8 @@ bool CISCTransform2ArraySet(TR_CISCTransformer *trans)
             TR::Node *innerBaseArray = getArrayBase(innerStoreNode);
             
             if (!innerBaseArray) {
+                printf("Reached here arraysetidiomfix - inner array is null\n");
+        
                 dumpOptDetails(comp, "Could not extract base array from inner store node %p\n", innerStoreNode);
                 return false;
             }
