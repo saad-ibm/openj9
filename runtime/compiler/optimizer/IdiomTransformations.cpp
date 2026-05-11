@@ -8685,7 +8685,7 @@ bool CISCTransform2ArraySet(TR_CISCTransformer *trans)
                     == indexNode->getSymbolReference()->getReferenceNumber()
                 || valueNode->getSymbolReference()->getReferenceNumber()
                     == index1RepNode->getSymbolReference()->getReferenceNumber()) {
-                logprints(disptrace, log, "arraystore tree has induction variable on rhs\n");
+                logprints(disptrace, log, "/ rhs\n");
                 return false;
             }
         }
@@ -8758,6 +8758,8 @@ bool CISCTransform2ArraySet(TR_CISCTransformer *trans)
             }
             
             if (sameArray) {
+                printf("Reached here arraysetidiomfix - inner and outter array are same\n");
+        
                 dumpOptDetails(comp, 
                     "Found stores to the same array - cannot merge into arrayset:\n"
                     "  Store 1: %p (base array %p, symref #%d)\n"
