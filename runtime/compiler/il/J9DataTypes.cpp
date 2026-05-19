@@ -22,6 +22,7 @@
 
 #include "il/J9DataTypes.hpp"
 
+#include "omrcomp.h"
 #include <stdint.h>
 #include <string.h>
 #include <ctype.h>

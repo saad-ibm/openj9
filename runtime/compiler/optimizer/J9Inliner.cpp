@@ -372,7 +372,8 @@ bool TR_InlinerBase::inlineCallTarget(TR_CallStack *callStack, TR_CallTarget *ca
     //
     if (!calltarget->_prexArgInfo)
         calltarget->_prexArgInfo = getUtil()->computePrexInfo(calltarget);
-
+    
+    printf("Reachead line 377 of J9Inliner.cpp\n");
     argInfo = TR_PrexArgInfo::enhance(calltarget->_prexArgInfo, argInfo, comp());
     calltarget->_prexArgInfo = argInfo;
     bool tracePrex = comp()->trace(OMR::inlining) || comp()->trace(OMR::invariantArgumentPreexistence);
