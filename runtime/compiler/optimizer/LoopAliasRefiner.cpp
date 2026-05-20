@@ -419,10 +419,10 @@ TR::Node *TR_LoopAliasRefiner::ArrayRangeLimits::createRangeTestExpr(TR::Compila
     if ((getArrayAccessSymRef() == other->getArrayAccessSymRef())
         || getArrayAccessSymRef()->getUseDefAliases().contains(other->getArrayAccessSymRef(), comp))
         isAliased = true;
-        printf("use def %d\n", getArrayAccessSymRef()->getUseDefAliases().contains(other->getArrayAccessSymRef(), comp));
-        printf("access sym ref1 Number %d access sym ref2 Number %d\n", getArrayAccessSymRef()->getReferenceNumber(), other->getArrayAccessSymRef()->getReferenceNumber());
-        printf("line 424 loop alias refiner\n");
-        printf("access sym ref1 %p access sym ref2 %p\n", getArrayAccessSymRef(), other->getArrayAccessSymRef());
+        // printf("use def %d\n", getArrayAccessSymRef()->getUseDefAliases().contains(other->getArrayAccessSymRef(), comp));
+        // printf("access sym ref1 Number %d access sym ref2 Number %d\n", getArrayAccessSymRef()->getReferenceNumber(), other->getArrayAccessSymRef()->getReferenceNumber());
+        // printf("line 424 loop alias refiner\n");
+        // printf("access sym ref1 %p access sym ref2 %p\n", getArrayAccessSymRef(), other->getArrayAccessSymRef());
     logprintf(trace, comp->log(), "access sym ref1 %d access sym ref2 %d isAliased %d\n", getArrayAccessSymRef(),
         other->getArrayAccessSymRef(), isAliased);
 
