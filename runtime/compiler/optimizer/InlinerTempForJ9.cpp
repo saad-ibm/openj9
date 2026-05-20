@@ -6068,7 +6068,7 @@ TR_PrexArgInfo *TR_J9InlinerUtil::computePrexInfo(TR_CallTarget *target, TR_Prex
 
     auto prexArgInfoFromTarget = createPrexArgInfoForCallTarget(target->_guard, target->_calleeMethod);
     auto prexArgInfoFromCallSite = TR_J9InlinerUtil::computePrexInfo(inliner(), site, callerArgInfo);
-    printf("Reachead line 6071 of InlinerTempForJ9.cpp\n");
+    //printf("Reachead line 6071 of InlinerTempForJ9.cpp\n");
     auto prexArgInfo = TR_PrexArgInfo::enhance(prexArgInfoFromTarget, prexArgInfoFromCallSite, comp());
 
     if (tracePrex && prexArgInfo) {
@@ -6320,7 +6320,7 @@ TR_PrexArgInfo *TR_J9InlinerUtil::computePrexInfo(TR_InlinerBase *inliner, TR_Ca
             callNode->getSymbol()->castToMethodSymbol()->getMethod()->signature(inliner->trMemory(), stackAlloc));
 
         TR_PrexArgInfo *argsFromCaller = TR_PrexArgInfo::argInfoFromCaller(callNode, callerArgInfo);
-        printf("Reachead line 6323 of InlinerTempForJ9.cpp\n");
+        //printf("Reachead line 6323 of InlinerTempForJ9.cpp\n");
         prexArgInfo = TR_PrexArgInfo::enhance(prexArgInfo, argsFromCaller, comp);
 
         if (tracePrex) {
@@ -6714,7 +6714,7 @@ bool TR_PrexArgInfo::validateAndPropagateArgsFromCalleeSymbol(TR_PrexArgInfo *ar
         }
     }
 
-    printf("Reachead line 6719 of InlinerTempForJ9.cpp\n");
+    //printf("Reachead line 6719 of InlinerTempForJ9.cpp\n");
     TR_PrexArgInfo::enhance(argsFromTarget, argsFromSymbol, tracer->comp()); // otherwise just pick more specific
 
     heuristicTrace(tracer, "ARGS PROPAGATION: final argInfo after merging argsFromTarget %p", argsFromTarget);
