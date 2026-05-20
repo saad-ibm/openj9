@@ -54,6 +54,7 @@
 #include "ilgen/J9ByteCodeIterator.hpp"
 #include "ras/Logger.hpp"
 
+#include <cstdio>
 #define OPT_DETAILS "O^O INLINER: "
 const float MIN_PROFILED_CALL_FREQUENCY
     = (.65f); // lowered this from .80f since opportunities were being missed in WAS; in those cases getting rid of the

@@ -66,7 +66,7 @@
 #include "j9consts.h"
 #include "optimizer/TransformUtil.hpp"
 #include "ras/Logger.hpp"
-
+#include <cstdio>
 namespace TR {
 class SimpleRegex;
 }
