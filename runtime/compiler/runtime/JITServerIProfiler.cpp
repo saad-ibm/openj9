@@ -385,47 +385,47 @@ TR_IPBytecodeHashTableEntry *JITServerIProfiler::profilingSample(TR_OpaqueMethod
         }
         if (methodInfoPresent) {
             _statsIProfilerInfoFromCache++;
-#if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
-            // sanity check
-            // Ask the client again and see if the two sources of information match
-            auto stream = comp->getStream();
-            stream->write(JITServer::MessageType::IProfiler_profilingSample, method, byteCodeIndex, _useCaching,
-                _useCaching && clientSession->usesProfileCache());
-            auto recv = stream->read<std::string, uint64_t, size_t, bool, bool, bool, std::vector<J9Class *>,
-                std::vector<JITServerHelpers::ClassInfoTuple> >();
-            auto &ipdata = std::get<0>(recv);
-            uint64_t numClientSamples = std::get<1>(recv);
-            size_t numProfiledBytecodes = std::get<2>(recv);
-            bool wholeMethod = std::get<3>(recv); // indicates whether the client sent info for entire method
-            bool usePersistentCache
-                = std::get<4>(recv); // indicates whether info can be saved in persistent memory, or only in heap memory
-            bool isCompiled = std::get<5>(recv);
-            auto &uncachedRAMClasses = std::get<6>(recv);
-            auto &classInfoTuples = std::get<7>(recv);
-            TR_ASSERT(!wholeMethod, "Client should not have sent whole method info");
-            uintptr_t methodStart = TR::Compiler->mtd.bytecodeStart(method);
-            TR_IPBCDataStorageHeader *clientData = ipdata.empty() ? NULL : (TR_IPBCDataStorageHeader *)ipdata.data();
-            bool isMethodBeingCompiled = (method == comp->getMethodBeingCompiled()->getPersistentIdentifier());
+// #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
+//             // sanity check
+//             // Ask the client again and see if the two sources of information match
+//             auto stream = comp->getStream();
+//             stream->write(JITServer::MessageType::IProfiler_profilingSample, method, byteCodeIndex, _useCaching,
+//                 _useCaching && clientSession->usesProfileCache());
+//             auto recv = stream->read<std::string, uint64_t, size_t, bool, bool, bool, std::vector<J9Class *>,
+//                 std::vector<JITServerHelpers::ClassInfoTuple> >();
+//             auto &ipdata = std::get<0>(recv);
+//             uint64_t numClientSamples = std::get<1>(recv);
+//             size_t numProfiledBytecodes = std::get<2>(recv);
+//             bool wholeMethod = std::get<3>(recv); // indicates whether the client sent info for entire method
+//             bool usePersistentCache
+//                 = std::get<4>(recv); // indicates whether info can be saved in persistent memory, or only in heap memory
+//             bool isCompiled = std::get<5>(recv);
+//             auto &uncachedRAMClasses = std::get<6>(recv);
+//             auto &classInfoTuples = std::get<7>(recv);
+//             TR_ASSERT(!wholeMethod, "Client should not have sent whole method info");
+//             uintptr_t methodStart = TR::Compiler->mtd.bytecodeStart(method);
+//             TR_IPBCDataStorageHeader *clientData = ipdata.empty() ? NULL : (TR_IPBCDataStorageHeader *)ipdata.data();
+//             bool isMethodBeingCompiled = (method == comp->getMethodBeingCompiled()->getPersistentIdentifier());
 
-            if (!clientData && entry) {
-                uint8_t bytecode = *(uint8_t *)(methodStart + byteCodeIndex);
-                fprintf(stderr,
-                    "Error cached IP data for method %p bcIndex %u bytecode=%x: ipdata is empty but we have a cached "
-                    "entry=%p\n",
-                    method, byteCodeIndex, bytecode, entry);
-            }
+//             if (!clientData && entry) {
+//                 uint8_t bytecode = *(uint8_t *)(methodStart + byteCodeIndex);
+//                 fprintf(stderr,
+//                     "Error cached IP data for method %p bcIndex %u bytecode=%x: ipdata is empty but we have a cached "
+//                     "entry=%p\n",
+//                     method, byteCodeIndex, bytecode, entry);
+//             }
 
-            bool isCompiledWhenProfiling = false;
-            if (!entryFromPerCompilationCache) {
-                auto &j9methodMap = clientSession->getJ9MethodMap();
-                auto it = j9methodMap.find((J9Method *)method);
-                if (it != j9methodMap.end()) {
-                    isCompiledWhenProfiling = it->second._isCompiledWhenProfiling;
-                }
-            }
-            validateCachedIPEntry(entry, clientData, methodStart, isMethodBeingCompiled, method,
-                entryFromPerCompilationCache, isCompiledWhenProfiling);
-#endif /* defined(DEBUG) || defined(PROD_WITH_ASSUMES) */
+//             bool isCompiledWhenProfiling = false;
+//             if (!entryFromPerCompilationCache) {
+//                 auto &j9methodMap = clientSession->getJ9MethodMap();
+//                 auto it = j9methodMap.find((J9Method *)method);
+//                 if (it != j9methodMap.end()) {
+//                     isCompiledWhenProfiling = it->second._isCompiledWhenProfiling;
+//                 }
+//             }
+//             validateCachedIPEntry(entry, clientData, methodStart, isMethodBeingCompiled, method,
+//                 entryFromPerCompilationCache, isCompiledWhenProfiling);
+// #endif /* defined(DEBUG) || defined(PROD_WITH_ASSUMES) */
             return entry; // could be NULL
         }
     }
