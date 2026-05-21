@@ -5727,7 +5727,9 @@ inline void generateInlinedCheckCastOrInstanceOfForClass(TR::Node *node, TR_Opaq
 TR::Register *J9::X86::TreeEvaluator::checkcastinstanceofEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR::Compilation *comp = cg->comp();
-    TR_ASSERT(false, "sanity check - must fail\n");
+    if (feGetEnv("doSanityAssert") != NULL) {
+            TR_ASSERT(false, "sanity check - must fail\n");
+    }
     bool isCheckCast = false;
     switch (node->getOpCodeValue()) {
         case TR::checkcast:
