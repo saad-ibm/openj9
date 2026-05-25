@@ -381,8 +381,9 @@ void J9::RecognizedCallTransformer::process_java_lang_StringLatin1_inflate_BIBII
     TR::Node *iaddNode2 = TR::Node::create(node, TR::iadd, 2, dstOff, length);
     TR::Node *ifCmpNode5 = TR::Node::createif(TR::ificmplt, ishrNode, iaddNode2);
     TR::TreeTop *ifCmpTreeTop5 = TR::TreeTop::create(comp(), ifCmpTreeTop4, ifCmpNode5);
-
-    TR::TreeTop *arrayTranslateTreeTop = TR::TreeTop::create(comp(), ifCmpTreeTop5, arrayTranslateNode);
+    
+    TR::Node *topOfTranslateNode = TR::Node::create(TR::treetop, 1, arrayTranslateNode);
+    TR::TreeTop *arrayTranslateTreeTop = TR::TreeTop::create(comp(), ifCmpTreeTop5, topOfTranslateNode);
 
     TR::Block *ifCmpBlock1 = ifCmpTreeTop1->getEnclosingBlock();
     TR::Block *ifCmpBlock2
