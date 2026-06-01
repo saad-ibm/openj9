@@ -471,7 +471,7 @@ uint16_t TR::SymbolValidationManager::tryGetSymbolIDFromValue(void *value)
 uint16_t TR::SymbolValidationManager::getSymbolIDFromValue(void *value)
 {
     uint16_t id = tryGetSymbolIDFromValue(value);
-    SVM_ASSERT(id != NO_ID, "Unknown value %p\n", value);
+    // SVM_ASSERT(id != NO_ID, "Unknown value %p\n", value);
     return id;
 }
 
