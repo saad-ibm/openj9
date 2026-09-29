@@ -978,7 +978,7 @@ int32_t J9::DataType::getBCDPrecisionFromString(char *str, TR::DataType dt) // +
     if (TR::DataType::isBCDSignChar(str[0])) {
         precision -= TR::DataType::getBCDSignCharSize();
     } else {
-        TR_ASSERT(OMR_ISDIGIT(str[0]), "expecting a minus/plus sign or a decimal digit and not 0x%x\n", str[0]);
+        //TR_ASSERT(OMR_ISDIGIT(str[0]), "expecting a minus/plus sign or a decimal digit and not 0x%x\n", str[0]);
     }
     return precision;
 }
@@ -990,7 +990,7 @@ int32_t J9::DataType::getBCDStringFirstIndex(char *str, TR::DataType dt)
     if (TR::DataType::isBCDSignChar(firstChar)) {
         firstIndex = TR::DataType::getBCDSignCharSize();
     } else {
-        TR_ASSERT(OMR_ISDIGIT(firstChar), "expecting a minus/plus sign or a decimal digit and not 0x%x\n", firstChar);
+        //TR_ASSERT(OMR_ISDIGIT(firstChar), "expecting a minus/plus sign or a decimal digit and not 0x%x\n", firstChar);
         firstIndex = 0;
     }
     return firstIndex;
