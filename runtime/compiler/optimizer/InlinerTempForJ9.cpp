@@ -6210,19 +6210,8 @@ TR_PrexArgInfo *TR_J9InlinerUtil::computePrexInfo(TR_InlinerBase *inliner, TR_Ca
         callNode->getSymbol()->castToMethodSymbol()->getMethod()->signature(inliner->trMemory(), stackAlloc));
 
     int32_t firstArgIndex = callNode->getFirstArgumentIndex();
-    // When _initialCalleeMethod has been refined (e.g. linkToStatic/linkToSpecial refined to the
-    // real target), the peeked IL call node still reflects the original, unrefinement signature and
-    // carries extra trailing arguments (e.g. MemberName) that are not present in the refined callee.
-    // Use the refined callee's parameter count as the array size so that this prexArgInfo matches
-    // the one built in createPrexArgInfoForCallTarget() (which uses implementer->numberOfParameters()).
-    // Without this, TR_PrexArgInfo::enhance() fires a size-mismatch assertion in addTarget().
-    int32_t numArgs = callee ? (int32_t)callee->numberOfParameters() : callNode->getNumArguments();
     for (int32_t c = callNode->getNumChildren() - 1; c >= firstArgIndex; c--) {
         int32_t argOrdinal = c - firstArgIndex;
-        // Skip any trailing arguments that fall outside the refined callee's parameter list
-        // (e.g. the MemberName slot in a linkToStatic/linkToSpecial call node).
-        if (argOrdinal >= numArgs)
-            continue;
 
         TR::Node *argument = callNode->getChild(c);
         logprintf(tracePrex, log, "PREX.inl:    Child %d [%p] n%dn %s %s\n", c, argument, argument->getGlobalIndex(),
@@ -6334,7 +6323,8 @@ TR_PrexArgInfo *TR_J9InlinerUtil::computePrexInfo(TR_InlinerBase *inliner, TR_Ca
 
         if (prexArg) {
             if (!prexArgInfo)
-                prexArgInfo = new (inliner->trHeapMemory()) TR_PrexArgInfo(numArgs, inliner->trMemory());
+                prexArgInfo
+                    = new (inliner->trHeapMemory()) TR_PrexArgInfo(callNode->getNumArguments(), inliner->trMemory());
             prexArgInfo->set(argOrdinal, prexArg);
         }
     }
