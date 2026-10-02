@@ -18,8 +18,8 @@
  * [2] https://openjdk.org/legal/assembly-exception.html
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0 OR GPL-2.0-only WITH OpenJDK-assembly-exception-1.0
+ * Assisted-by: IBM Bob
  *******************************************************************************/
-#include <algorithm>
 #include "j9cfg.h"
 #include "optimizer/Inliner.hpp"
 #include "optimizer/J9Inliner.hpp"
@@ -4974,7 +4974,7 @@ void TR_J9InlinerUtil::refineInlineGuard(TR::Node *callNode, TR::Block *&block1,
         if (comp()->usesPreexistence()) // Mark the preexistent arguments (maybe redundant if VP has already done that
                                         // and provided the info in argInfo)
         {
-            int32_t firstArgIndex = callNode->getFirstArgumentIndex();
+            int32_t firstArgIndex = getFirstJavaArgumentIndex(callNode);
             for (int32_t c = callNode->getNumChildren() - 1; c >= firstArgIndex; c--) {
                 TR::Node *argument = callNode->getChild(c);
                 TR_PrexArgument *p = argInfo->get(c - firstArgIndex);
@@ -6063,8 +6063,8 @@ TR_PrexArgInfo *TR_PrexArgInfo::argInfoFromCaller(TR::Node *callNode, TR_PrexArg
     TR::Compilation *compilation = TR::comp();
     bool tracePrex = compilation->trace(OMR::inlining) || compilation->trace(OMR::invariantArgumentPreexistence);
 
-    int32_t firstArgIndex = callNode->getFirstArgumentIndex();
-    int32_t numArgs = callNode->getNumArguments();
+    int32_t firstArgIndex = getFirstJavaArgumentIndex(callNode);
+    int32_t numArgs = callNode->getNumChildren() - firstArgIndex;
     int32_t numChildren = callNode->getNumChildren();
 
     TR_PrexArgInfo *argInfo = new (compilation->trHeapMemory()) TR_PrexArgInfo(numArgs, compilation->trMemory());
@@ -6182,6 +6182,28 @@ static TR::TreeTop *getFirstOccurrenceOfLoad(TR::Compilation *comp, TR::TreeTop 
     return NULL;
 }
 
+/* Returns the index of the first Java argument child of a call node.
+ * For most calls this equals callNode->getFirstArgumentIndex(). For native
+ * calls prepared for direct JNI dispatch (isPreparedForDirectJNI()), the JNI
+ * lowering prepends an extra addressOfJavaLangClassReference child that
+ * getFirstArgumentIndex() does not account for. Without this adjustment, prex
+ * arg-info arrays indexed by (c - firstArgIndex) end up off by one, producing
+ * a size mismatch when enhance() tries to merge the two arrays.
+ */
+static int32_t getFirstJavaArgumentIndex(TR::Node *callNode)
+    {
+    int32_t firstArgIndex = callNode->getFirstArgumentIndex();
+    if (callNode->isPreparedForDirectJNI())
+        {
+        TR::MethodSymbol *methodSymbol = callNode->getSymbol()->castToMethodSymbol();
+        if (methodSymbol->isStatic()
+            && (callNode->getNumChildren() - firstArgIndex)
+                   > (int32_t)methodSymbol->getMethod()->numberOfExplicitParameters())
+            firstArgIndex += 1;
+        }
+    return firstArgIndex;
+    }
+
 TR_PrexArgInfo *TR_J9InlinerUtil::computePrexInfo(TR_InlinerBase *inliner, TR_CallSite *site,
     TR_PrexArgInfo *callerArgInfo)
 {
@@ -6209,7 +6231,7 @@ TR_PrexArgInfo *TR_J9InlinerUtil::computePrexInfo(TR_InlinerBase *inliner, TR_Ca
         callNode->getOpCode().getName(),
         callNode->getSymbol()->castToMethodSymbol()->getMethod()->signature(inliner->trMemory(), stackAlloc));
 
-    int32_t firstArgIndex = callNode->getFirstArgumentIndex();
+    int32_t firstArgIndex = getFirstJavaArgumentIndex(callNode);
     for (int32_t c = callNode->getNumChildren() - 1; c >= firstArgIndex; c--) {
         int32_t argOrdinal = c - firstArgIndex;
 
@@ -6227,7 +6249,7 @@ TR_PrexArgInfo *TR_J9InlinerUtil::computePrexInfo(TR_InlinerBase *inliner, TR_Ca
 
         TR_PrexArgument *prexArg = NULL;
 
-        if (c == callNode->getFirstArgumentIndex() && callee && callee->convertToMethod()->isArchetypeSpecimen()
+        if (c == firstArgIndex && callee && callee->convertToMethod()->isArchetypeSpecimen()
             && callee->getMethodHandleLocation() && comp->getOrCreateKnownObjectTable()) {
             // Here's a situation where inliner is taking it upon itself to draw
             // conclusions about known objects.  VP won't get a chance to figure this
@@ -6400,7 +6422,7 @@ void TR_J9InlinerUtil::checkForConstClass(TR_CallTarget *target, TR_LogTracer *t
         callNode->getSymbol()->castToMethodSymbol()->getMethod()->signature(comp->trMemory(), stackAlloc));
 
     // loop over args
-    int32_t firstArgIndex = callNode->getFirstArgumentIndex();
+    int32_t firstArgIndex = getFirstJavaArgumentIndex(callNode);
     for (int32_t c = callNode->getNumChildren() - 1; c >= firstArgIndex; c--) {
         int32_t argOrdinal = c - firstArgIndex;
 
@@ -6792,7 +6814,8 @@ void TR_PrexArgInfo::propagateArgsFromCaller(TR::ResolvedMethodSymbol *methodSym
     // In such case, propagating argInfo->get(0) any longer might be incorrect.
 
     TR_PrexArgument *receiverPrexArg = NULL;
-    TR::Node *receiverChild = callNode->getChild(callNode->getFirstArgumentIndex());
+    int32_t firstArgIndex = getFirstJavaArgumentIndex(callNode);
+    TR::Node *receiverChild = callNode->getChild(firstArgIndex);
     if (callsite->_ecsPrexArgInfo) {
         if (TR_PrexArgInfo::hasArgInfoForChild(receiverChild, argInfo)) {
             receiverPrexArg = TR_PrexArgInfo::getArgForChild(receiverChild, argInfo);
@@ -6806,7 +6829,7 @@ void TR_PrexArgInfo::propagateArgsFromCaller(TR::ResolvedMethodSymbol *methodSym
         if (tracer->heuristicLevel())
             callsite->getTarget(i)->_ecsPrexArgInfo->dumpTrace();
 
-    for (int i = callNode->getFirstArgumentIndex(); i < callNode->getNumChildren(); i++) {
+    for (int i = firstArgIndex; i < callNode->getNumChildren(); i++) {
         TR::Node *child = callNode->getChild(i);
         if (TR_PrexArgInfo::hasArgInfoForChild(child, argInfo)) {
             heuristicTrace(tracer, "ARGS PROPAGATION: arg %d at callsite %p matches caller's arg %d", i, callsite,
@@ -6818,11 +6841,11 @@ void TR_PrexArgInfo::propagateArgsFromCaller(TR::ResolvedMethodSymbol *methodSym
 
                 TR_PrexArgInfo *targetArgInfo = callsite->getTarget(j)->_ecsPrexArgInfo;
 
-                if (i - callNode->getFirstArgumentIndex() >= targetArgInfo->getNumArgs())
+                if (i - firstArgIndex >= targetArgInfo->getNumArgs())
                     continue;
 
-                if (!targetArgInfo->get(i - callNode->getFirstArgumentIndex()))
-                    targetArgInfo->set(i - callNode->getFirstArgumentIndex(),
+                if (!targetArgInfo->get(i - firstArgIndex))
+                    targetArgInfo->set(i - firstArgIndex,
                         TR_PrexArgInfo::getArgForChild(child, argInfo));
             }
         }
