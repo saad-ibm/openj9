@@ -6345,8 +6345,8 @@ TR_PrexArgInfo *TR_J9InlinerUtil::computePrexInfo(TR_InlinerBase *inliner, TR_Ca
 
         if (prexArg) {
             if (!prexArgInfo)
-                prexArgInfo
-                    = new (inliner->trHeapMemory()) TR_PrexArgInfo(callNode->getNumArguments(), inliner->trMemory());
+                prexArgInfo = new (inliner->trHeapMemory())
+                    TR_PrexArgInfo(callNode->getNumChildren() - firstArgIndex, inliner->trMemory());
             prexArgInfo->set(argOrdinal, prexArg);
         }
     }
