@@ -3545,7 +3545,7 @@ bool TR_MultipleCallTargetInliner::eliminateTailRecursion(TR::ResolvedMethodSymb
 void TR_MultipleCallTargetInliner::assignArgumentsToParameters(TR::ResolvedMethodSymbol *calleeSymbol,
     TR::TreeTop *prevTreeTop, TR::Node *callNode)
 {
-    int32_t i = callNode->getFirstArgumentIndex();
+    int32_t i = getFirstJavaArgumentIndex(callNode);
     ListIterator<TR::ParameterSymbol> parms(&calleeSymbol->getParameterList());
     for (TR::ParameterSymbol *p = parms.getFirst(); p; ++i, p = parms.getNext()) {
         TR::SymbolReference *sr
@@ -3573,7 +3573,7 @@ void TR_MultipleCallTargetInliner::assignArgumentsToParameters(TR::ResolvedMetho
                 newArg->setDecimalPrecision(arg->getDecimalPrecision());
             }
 
-            if (i == 1 && i == callNode->getFirstArgumentIndex() && callNode->getChild(0)->getChild(0) == arg) {
+            if (i == 1 && i == getFirstJavaArgumentIndex(callNode) && callNode->getChild(0)->getChild(0) == arg) {
                 arg->decReferenceCount();
                 callNode->getChild(0)->setAndIncChild(0, newArg);
             }
@@ -6702,13 +6702,13 @@ void TR_PrexArgInfo::propagateReceiverInfoIfAvailable(TR::ResolvedMethodSymbol *
     if (!callNode || comp->getOption(TR_DisableInlinerArgsPropagation))
         return;
 
-    uint32_t numOfArgs = callNode->getNumChildren() - callNode->getFirstArgumentIndex();
+    uint32_t numOfArgs = callNode->getNumChildren() - getFirstJavaArgumentIndex(callNode);
 
     if (numOfArgs < 1)
         return;
     // TR_ASSERT(numOfArgs > 0, "argsinfo index out of bounds");
 
-    TR::Node *child = callNode->getChild(callNode->getFirstArgumentIndex());
+    TR::Node *child = callNode->getChild(getFirstJavaArgumentIndex(callNode));
 
     if (TR_PrexArgInfo::hasArgInfoForChild(child, argInfo)) {
         heuristicTrace(tracer, "ARGS PROPAGATION: the receiver for callsite %p is also one of the caller's args",
@@ -7504,7 +7504,7 @@ TR_J9InnerPreexistenceInfo::TR_J9InnerPreexistenceInfo(TR::Compilation *c, TR::R
         TR::Node *node = _callNode;
         TR_ASSERT(callStack, "must have a call stack if we are being inlined from somewhere\n");
 
-        int32_t firstArgIndex = node->getFirstArgumentIndex();
+        int32_t firstArgIndex = getFirstJavaArgumentIndex(node);
         for (int32_t c = node->getNumChildren() - 1; c >= firstArgIndex; --c) {
             TR::Node *argument = node->getChild(c);
             if (argument->getOpCodeValue() == TR::aload) {
