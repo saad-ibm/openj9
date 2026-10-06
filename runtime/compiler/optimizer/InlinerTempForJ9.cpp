@@ -3542,6 +3542,28 @@ bool TR_MultipleCallTargetInliner::eliminateTailRecursion(TR::ResolvedMethodSymb
     return true;
 }
 
+/* Returns the index of the first Java argument child of a call node.
+ * For most calls this equals callNode->getFirstArgumentIndex(). For native
+ * calls prepared for direct JNI dispatch (isPreparedForDirectJNI()), the JNI
+ * lowering prepends an extra addressOfJavaLangClassReference child that
+ * getFirstArgumentIndex() does not account for. Without this adjustment, prex
+ * arg-info arrays indexed by (c - firstArgIndex) end up off by one, producing
+ * a size mismatch when enhance() tries to merge the two arrays.
+ */
+static int32_t getFirstJavaArgumentIndex(TR::Node *callNode)
+    {
+    int32_t firstArgIndex = callNode->getFirstArgumentIndex();
+    if (callNode->isPreparedForDirectJNI())
+        {
+        TR::MethodSymbol *methodSymbol = callNode->getSymbol()->castToMethodSymbol();
+        if (methodSymbol->isStatic()
+            && (callNode->getNumChildren() - firstArgIndex)
+                   > (int32_t)methodSymbol->getMethod()->numberOfExplicitParameters())
+            firstArgIndex += 1;
+        }
+    return firstArgIndex;
+    }
+
 void TR_MultipleCallTargetInliner::assignArgumentsToParameters(TR::ResolvedMethodSymbol *calleeSymbol,
     TR::TreeTop *prevTreeTop, TR::Node *callNode)
 {
@@ -4963,28 +4985,6 @@ bool TR_J9InlinerPolicy::shouldRemoveDifferingTargets(TR::Node *callNode)
 
     return rm != TR::java_lang_invoke_MethodHandle_invokeBasic;
 }
-
-/* Returns the index of the first Java argument child of a call node.
- * For most calls this equals callNode->getFirstArgumentIndex(). For native
- * calls prepared for direct JNI dispatch (isPreparedForDirectJNI()), the JNI
- * lowering prepends an extra addressOfJavaLangClassReference child that
- * getFirstArgumentIndex() does not account for. Without this adjustment, prex
- * arg-info arrays indexed by (c - firstArgIndex) end up off by one, producing
- * a size mismatch when enhance() tries to merge the two arrays.
- */
-static int32_t getFirstJavaArgumentIndex(TR::Node *callNode)
-    {
-    int32_t firstArgIndex = callNode->getFirstArgumentIndex();
-    if (callNode->isPreparedForDirectJNI())
-        {
-        TR::MethodSymbol *methodSymbol = callNode->getSymbol()->castToMethodSymbol();
-        if (methodSymbol->isStatic()
-            && (callNode->getNumChildren() - firstArgIndex)
-                   > (int32_t)methodSymbol->getMethod()->numberOfExplicitParameters())
-            firstArgIndex += 1;
-        }
-    return firstArgIndex;
-    }
 
 void TR_J9InlinerUtil::refineInlineGuard(TR::Node *callNode, TR::Block *&block1, TR::Block *&block2,
     bool &appendTestToBlock1, TR::ResolvedMethodSymbol *callerSymbol, TR::TreeTop *cursorTree,
