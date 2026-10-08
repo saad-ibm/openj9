@@ -802,7 +802,9 @@ void TR_J9VMBase::freeSharedCache()
         if (_compInfo && (_compInfo->getPersistentInfo()->getRemoteCompilationMode() != JITServer::SERVER))
 #endif /* defined(J9VM_OPT_JITSERVER) */
         {
-            TR_ASSERT(TR::Options::sharedClassCache(), "Found shared cache with option disabled");
+            // TR_ASSERT(TR::Options::sharedClassCache(), "Found shared cache with option disabled");
+            // Test: sharedClassCache() can be cleared after _sharedCache is allocated at runtime
+            // e.g. AOT header validation failure, FSD/JVMPI active, CRIU debug-on-restore (Bug 7)
         }
         jitPersistentFree(_sharedCache);
         _sharedCache = NULL;
