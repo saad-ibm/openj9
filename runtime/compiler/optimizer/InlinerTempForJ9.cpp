@@ -20,6 +20,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0 OR GPL-2.0-only WITH OpenJDK-assembly-exception-1.0
  * Assisted-by: IBM Bob
  *******************************************************************************/
+#include <algorithm>
 #include "j9cfg.h"
 #include "optimizer/Inliner.hpp"
 #include "optimizer/J9Inliner.hpp"
